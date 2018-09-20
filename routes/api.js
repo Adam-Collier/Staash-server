@@ -12,7 +12,8 @@ router.get("/", function(req, res, next) {
       res.send(err);
     } else {
       // find the team and send all of their sites in the response
-      User.find({ team: decoded.team }, function(err, teamUsers) {
+      User.find({ teamId: decoded.teamId }, function(err, teamUsers) {
+        if (err) console.log(err);
         teamSites = teamUsers.reduce((acc, curr) => acc.concat(curr.sites), []);
         res.send(teamSites.reverse());
       });

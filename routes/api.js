@@ -5,18 +5,28 @@ var cloudinary = require("cloudinary");
 var puppeteer = require("puppeteer");
 var User = require("../models/User");
 
-router.get("/", function(req, res, next) {
+router.get("/", function(req, res) {
   // check if the user has a valid JSON web token
   jwt.verify(req.headers.token, process.env.JWT_SECRET, function(err, decoded) {
     if (err) {
       res.send(err);
     } else {
-      // find the team and send all of their sites in the response
-      User.find({ teamId: decoded.teamId }, function(err, teamUsers) {
-        if (err) console.log(err);
-        teamSites = teamUsers.reduce((acc, curr) => acc.concat(curr.sites), []);
-        res.send(teamSites.reverse());
-      });
+      // depending on type header return user sites or team sites
+      if (req.headers.type == "user") {
+        User.find({ userId: decoded.userId }, function(err, user) {
+          if (err) console.log(err);
+          res.send(user[0].sites.reverse());
+        });
+      } else {
+        User.find({ teamId: decoded.teamId }, function(err, teamUsers) {
+          if (err) console.log(err);
+          teamSites = teamUsers.reduce(
+            (acc, curr) => acc.concat(curr.sites),
+            []
+          );
+          res.send(teamSites.reverse());
+        });
+      }
     }
   });
 });

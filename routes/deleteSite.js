@@ -1,42 +1,46 @@
 var express = require("express");
 var router = express.Router();
 var cloudinary = require("cloudinary");
+var User = require("../models/User");
+var jwt = require("jsonwebtoken");
 
-router.post("/delete", (req, res) => {
+router.post("/", (req, res) => {
   console.log(req.body);
   // find the user
-  User.findOne({ slackId: req.body.id }, function(err, user) {
-    if (err) console.log(err);
+  jwt.verify(req.headers.token, process.env.JWT_SECRET, function(err, decoded) {
+    if (err) {
+      res.send(err);
+    } else {
+      User.findOne({ userId: decoded.userId }, function(err, user) {
+        if (err) console.log(err);
 
-    cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_NAME,
-      api_key: process.env.CLOUDINARY_KEY,
-      api_secret: process.env.CLOUDINARY_SECRET
-    });
+        cloudinary.config({
+          cloud_name: process.env.CLOUDINARY_NAME,
+          api_key: process.env.CLOUDINARY_KEY,
+          api_secret: process.env.CLOUDINARY_SECRET
+        });
 
-    let public_id = req.body.image.slice(62, -4);
+        let site = {};
 
-    console.log("this is the id", public_id);
+        user.sites.forEach((x, i) => {
+          x.id == req.body.id ? ((site = x), user.sites[i].remove()) : null;
+        });
 
-    // remove the site on cloudinary
-    cloudinary.uploader.destroy(public_id, function(result) {
-      console.log(result);
-    });
+        ["desktopImage", "mobileImage"].forEach(x => {
+          let public_id = site[x].slice(62, -4);
+          cloudinary.uploader.destroy(public_id, function(result) {
+            console.log(result);
+          });
+        });
 
-    // remove the site from the database
-    user.sites.forEach((x, i) => {
-      console.log(x._id);
-      if (x._id == req.body.site) {
-        console.log("yahhhh removing something");
-        user.sites[i].remove();
-      }
-    });
-    // save the user with the site removed
-    user.save(function(err) {
-      if (err) console.log(err);
-      console.log("site removed successfully");
-    });
-    res.send("blah");
+        // save the user with the site removed
+        user.save(function(err) {
+          if (err) console.log(err);
+          console.log("saved");
+          res.send("blah");
+        });
+      });
+    }
   });
 });
 

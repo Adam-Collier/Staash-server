@@ -11,22 +11,19 @@ router.get("/", function(req, res) {
     if (err) {
       res.send(err);
     } else {
-      // depending on type header return user sites or team sites
-      if (req.headers.type == "user") {
-        User.find({ userId: decoded.userId }, function(err, user) {
-          if (err) console.log(err);
-          res.send(user[0].sites.reverse());
+      User.find({ teamId: decoded.teamId }, function(err, teamUsers) {
+        if (err) console.log(err);
+        teamSites = teamUsers
+          .reduce((acc, curr) => acc.concat(curr.sites), [])
+          .reverse();
+        let userSites = teamSites.filter(x => {
+          return x.author == decoded.name;
         });
-      } else {
-        User.find({ teamId: decoded.teamId }, function(err, teamUsers) {
-          if (err) console.log(err);
-          teamSites = teamUsers.reduce(
-            (acc, curr) => acc.concat(curr.sites),
-            []
-          );
-          res.send(teamSites.reverse());
+        res.send({
+          teamSites,
+          userSites
         });
-      }
+      });
     }
   });
 });

@@ -67,12 +67,18 @@ router.post("/", (req, res) => {
               args: ["--no-sandbox", "--disable-setuid-sandbox"]
             });
 
+            async function timeout(ms) {
+              return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
             const page = await browser.newPage();
 
             await page.goto(req.body.siteUrl);
 
             // grab desktop screenshot
             await page.setViewport({ width: 1440, height: 850 });
+
+            await timeout(3000);
 
             await page.screenshot({ type: "jpeg" }).then(data => {
               cloudinary.uploader.upload(
@@ -95,6 +101,8 @@ router.post("/", (req, res) => {
 
             // grab mobile screenshot
             await page.emulate(iPhone6);
+
+            await timeout(3000);
 
             await page
               .screenshot({

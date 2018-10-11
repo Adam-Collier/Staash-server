@@ -25,7 +25,8 @@
     "react-router": "^4.2.0",
     "react-router-dom": "^4.2.2",
     "request": "^2.88.0",
-    "serve-favicon": "~2.4.5"
+    "serve-favicon": "~2.4.5",
+    "url-exists-deep": "^1.1.1"
   },
   "devDependencies": {
     "concurrently": "^3.5.1",

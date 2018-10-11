@@ -1,29 +1,16 @@
 var express = require("express");
 var router = express.Router();
-var fetch = require("node-fetch");
-var request = require("request");
-var http = require("http");
+var urlExists = require("url-exists-deep");
 
 router.post("/", function(req, res) {
-  // fetch the url from the requests body
-  // fetch(req.body.u, {
-  //   cors: "no-cors"
-  // })
-  //   .then(response => {
-  //     return response.status;
-  //   })
-  //   .then(response => {
-  //     res.sendStatus(response);
-  //   })
-  //   .catch(err => {
-  //     if (err) {
-  //       res.sendStatus(404);
-  //     }
-  //   });
-
-  request({ url: req.body.u, method: "HEAD" }, function(err, response) {
-    if (err) console.log(err, "this is an error");
-    res.sendStatus(response.statusCode);
+  urlExists(req.body.u).then(function(response) {
+    if (response) {
+      console.log("Url exists", response.href);
+      res.sendStatus(200);
+    } else {
+      console.log("Url does not exists!");
+      res.sendStatus(400);
+    }
   });
 });
 
